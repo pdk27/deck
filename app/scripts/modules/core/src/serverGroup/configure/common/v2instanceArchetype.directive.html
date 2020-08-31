@@ -1,3 +1,4 @@
+<!--<h4>To customize instance diversification, use <a>Advanced Mode</a>.</h4>-->
 <h4 class="col-md-12" style="margin-top: 10px">This application is:</h4>
 <div class="archetype-columns archetype-columns-{{columns}}" ng-repeat="instanceProfile in instanceProfiles">
   <button
@@ -19,21 +20,302 @@
   </button>
 </div>
 <div class="clearfix" ng-if="instanceArchetypeCtrl.command.viewState.instanceProfile === 'custom'">
-  <dirty-instance-type-notification command="instanceArchetypeCtrl.command"></dirty-instance-type-notification>
-  <div class="col-md-8">
-    <select
-      class="form-control input-sm"
-      ng-model="instanceArchetypeCtrl.command.instanceType"
-      ng-options="customType for customType in instanceArchetypeCtrl.command.backingData.filtered.instanceTypes"
-      ng-change="instanceArchetypeCtrl.updateInstanceTypeDetails()"
-      required
-    >
-      <option value="">Select an instance type...</option>
-    </select>
+  <div>
+    <h4>Instance Diversification</h4>
+    <p>Diversify instance type selection across various parameters.</p>
+    <div className="container-fluid form-horizontal">
+      <div class="form-group">
+        <label class="control-label col-sm-6" for="spot-alloc">
+          Spot Allocation Strategy
+          <help-field key="aws.serverGroup.spotAllocationStrategy"></help-field>
+        </label>
+        <div class="col-sm-6">
+          <select id="spot-alloc" class="form-control input-sm">
+            <option value="">
+              Capacity optimized (recommended)
+              <!--<div-->
+              <!--key="capacity optimized"-->
+              <!--&gt;-->
+              <!--<div>capacity optimized</div>-->
+              <!--<div className="small">-->
+              <!--<b>Launch Spot Instances optimally based on the available Spot capacity (recommended)</b>-->
+              <!--</div>-->
+              <!--</div>-->
+            </option>
+            <option value="" data-toggle="tooltip" title="Launch Spot Instances from the lowest priced instance pools"
+              >Lowest price</option
+            >
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <!--todo: display if Lowest Price is selected-->
+        <label class="control-label col-sm-6" for="spot-pools">
+          Spot Instance Pools Count
+          <help-field key="aws.serverGroup.spotInstancePoolCount"></help-field>
+        </label>
+        <div class="col-sm-6">
+          <input id="spot-pools" type="text" class="form-control input-sm" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-6" for="od-base-cap">
+          On-Demand Base Capacity
+          <help-field key="aws.serverGroup.odBase"></help-field>
+        </label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control input-sm" id="od-base-cap" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-6" for="od-percent">
+          On-Demand Percentage Above Base Capacity
+          <help-field key="aws.serverGroup.odPercentAboveBase"></help-field>
+        </label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control input-sm" id="od-percent" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="control-label col-sm-6" for="spot-price">
+          Spot Max Price
+          <help-field key="aws.serverGroup.spotPrice"></help-field>
+        </label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control input-sm" id="spot-price" />
+        </div>
+      </div>
+    </div>
   </div>
+  <hr />
+  <dirty-instance-type-notification command="instanceArchetypeCtrl.command"></dirty-instance-type-notification>
+  <!--<div class="col-md-8">-->
+  <!--<select-->
+  <!--class="form-control input-sm"-->
+  <!--ng-model="instanceArchetypeCtrl.command.instanceType"-->
+  <!--ng-options="customType for customType in instanceArchetypeCtrl.command.backingData.filtered.instanceTypes"-->
+  <!--ng-change="instanceArchetypeCtrl.updateInstanceTypeDetails()"-->
+  <!--required-->
+  <!--&gt;-->
+  <!--<option value="">Select an instance type...</option>-->
+  <!--</select>-->
+  <!--</div>-->
+  <h4>Instance Types</h4>
+  <p>
+    Choose instance types that best suit the needs of your application.
+    <br />
+    <i
+      ><b>Note:</b> The order of instance types sets their priority when On-Demand capacity is launched; instance type
+      at the top is prioritized the highest.</i
+    >
+  </p>
+
+  <div className="form-group">
+    <div className="col-md-10 checkbox">
+      <label>
+        <input type="checkbox" />
+        <b>Enable unlimited CPU credits</b>
+      </label>
+    </div>
+  </div>
+  <table class="table table-hover w-auto">
+    <thead>
+      <tr>
+        <th>
+          Instance Type
+          <help-field key="aws.serverGroup.instanceTypes" />
+        </th>
+        <th>
+          Weight
+          <help-field key="aws.serverGroup.instanceTypeWeight"></help-field>
+        </th>
+        <th class="column-vertical-line"></th>
+        <th class="column-vertical-line"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <select class="form-control input input-sm">
+            <option value="">m5.xlarge</option>
+          </select>
+        </td>
+        <td><input class="form-control input input-sm" type="text" placeholder="1" value="4" /></td>
+        <td class="column-vertical-line">
+          <div className="form-control-static">
+            <a class="disabled" className="clickable">
+              <span class="glyphicon glyphicon-circle-arrow-up" uib-tooltip="move up"></span>
+            </a>
+            <a className="clickable">
+              <span class="glyphicon glyphicon-circle-arrow-down" uib-tooltip="move down" />
+            </a>
+          </div>
+        </td>
+        <td class="column-vertical-line">
+          <div className="form-control-static">
+            <a className="clickable" onClick="{onDelete}">
+              <span class="glyphicon glyphicon-trash" uib-tooltip="Remove instance type" />
+            </a>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <select class="form-control input input-sm">
+            <option value="">t2.large</option>
+          </select>
+        </td>
+        <td><input class="form-control input input-sm" type="text" placeholder="1" value="2" /></td>
+        <td class="column-vertical-line">
+          <div className="form-control-static">
+            <a className="clickable">
+              <span class="glyphicon glyphicon-circle-arrow-up" uib-tooltip="move up"></span>
+            </a>
+            <a className="clickable">
+              <span class="glyphicon glyphicon-circle-arrow-down" uib-tooltip="move down" />
+            </a>
+          </div>
+        </td>
+        <td class="column-vertical-line">
+          <div className="form-control-static">
+            <a className="clickable" onClick="{onDelete}">
+              <span class="glyphicon glyphicon-trash" uib-tooltip="Remove instance type" />
+            </a>
+          </div>
+        </td>
+      </tr>
+      <tr></tr>
+      <tr>
+        <td>
+          <select class="form-control input input-sm">
+            <option value="">t3.large</option>
+          </select>
+        </td>
+        <td><input class="form-control input input-sm" type="text" placeholder="1" value="2" /></td>
+        <td class="column-vertical-line">
+          <div className="form-control-static">
+            <a className="clickable">
+              <span class="glyphicon glyphicon-circle-arrow-up" uib-tooltip="move up"></span>
+            </a>
+            <a class="disabled" className="clickable">
+              <span class="glyphicon glyphicon-circle-arrow-down" uib-tooltip="move down" />
+            </a>
+          </div>
+        </td>
+        <td class="column-vertical-line">
+          <div className="form-control-static">
+            <a className="clickable" onClick="{onDelete}">
+              <span class="glyphicon glyphicon-trash" uib-tooltip="Remove instance type" />
+            </a>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <select
+            class="form-control input input-sm"
+            ng-model="instanceArchetypeCtrl.command.instanceType"
+            ng-options="customType for customType in instanceArchetypeCtrl.command.backingData.filtered.instanceTypes"
+            ng-change="instanceArchetypeCtrl.updateInstanceTypeDetails()"
+            required
+          >
+            <option value="">Select an instance type...</option>
+          </select>
+        </td>
+        <td><input class="form-control input input-sm" type="text" placeholder="1" /></td>
+        <td class="column-vertical-line">
+          <div className="form-control-static">
+            <a class="disabled" className="clickable">
+              <span class="glyphicon glyphicon-circle-arrow-up" uib-tooltip="move up"></span>
+            </a>
+            <a class="disabled" className="clickable">
+              <span class="glyphicon glyphicon-circle-arrow-down" uib-tooltip="move down" />
+            </a>
+          </div>
+        </td>
+        <td class="column-vertical-line">
+          <div className="form-control-static">
+            <a class="disabled" className="clickable" onClick="{onDelete}">
+              <span class="glyphicon glyphicon-trash" uib-tooltip="Remove instance type" />
+            </a>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="col-md-9">
+            <select class="mdb-select md-form selectpicker show-tick">
+              <option disabled selected>Select an instance type</option>
+              <option data-secondary-text="vcpu: 4, memory(GiB): 8">m5.xlarge</option>
+              <option data-secondary-text="vcpu: 2, memory(GiB): 8">t2.large</option>
+              <option data-secondary-text="vcpu: 2, memory(GiB): 16">t3.large</option>
+            </select>
+
+            <!--<ui-select ng-model="ctrl.person.selected" theme="select2" ng-disabled="ctrl.disabled" style="min-width: 300px;" title="Choose a person">-->
+            <!--<ui-select-match placeholder="Select a person in the list or search his name/age...">{{$select.selected.name}}</ui-select-match>-->
+            <!--<ui-select-choices repeat="person in ctrl.people | propsFilter: {name: $select.search, age: $select.search}">-->
+            <!--<div ng-bind-html="person.name | highlight: $select.search"></div>-->
+            <!--<small>-->
+            <!--email: {{person.email}}-->
+            <!--age: <span ng-bind-html="''+person.age | highlight: $select.search"></span>-->
+            <!--</small>-->
+            <!--</ui-select-choices>-->
+            <!--</ui-select>-->
+            <!--<ui-select class="form-control input-sm">-->
+            <!--<ui-select-match placeholder="Select an instance type">m5.xlarge</ui-select-match>-->
+            <!--<ui-select-choices>-->
+            <!--<span >m5.xlarge</span>-->
+            <!--<div key=m5.xlarge>-->
+            <!--<div>m5.xlarge</div>-->
+            <!--<div className="small">-->
+            <!--<b>vcpu: </b>-->
+            <!--4-->
+            <!--<b className="sp-padding-s-left">memory (GiB): </b>-->
+            <!--8-->
+            <!--</div>-->
+            <!--</div>-->
+            <!--</ui-select-choices>-->
+            <!--<span >t3.large</span>-->
+            <!--<span >t2.large</span>-->
+            <!--</ui-select-choices>-->
+            <!--</ui-select>-->
+          </div>
+        </td>
+        <td><input class="form-control input input-sm" type="text" placeholder="1" /></td>
+        <td class="column-vertical-line">
+          <div className="form-control-static">
+            <a class="disabled" className="clickable">
+              <span class="glyphicon glyphicon-circle-arrow-up" uib-tooltip="move up"></span>
+            </a>
+            <a class="disabled" className="clickable">
+              <span class="glyphicon glyphicon-circle-arrow-down" uib-tooltip="move down" />
+            </a>
+          </div>
+        </td>
+        <td class="column-vertical-line">
+          <div className="form-control-static">
+            <a class="disabled" className="clickable" onClick="{onDelete}">
+              <span class="glyphicon glyphicon-trash" uib-tooltip="Remove instance type" />
+            </a>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="text-align: center">
+          <button type="button" class="btn btn-block btn-sm add-new">
+            <span class="glyphicon glyphicon-plus-sign" />Add Instance Type
+          </button>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
 </div>
 <ng-include
   src="instanceArchetypeCtrl.getInstanceBuilderTemplate()"
   ng-if="instanceArchetypeCtrl.command.viewState.instanceProfile === 'buildCustom'"
 >
 </ng-include>
+
+<!--Provide option for enabling unlimited CPU credits if the list contains t2/ t3 family type-->

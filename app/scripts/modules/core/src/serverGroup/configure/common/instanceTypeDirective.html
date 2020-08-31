@@ -1,52 +1,347 @@
 <dirty-instance-type-notification command="command"></dirty-instance-type-notification>
-<div class="row" ng-repeat="family in selectedInstanceProfile.families">
-  <div class="col-md-12">
-    <h4>{{selectedInstanceProfile.label}}: {{family.type}}</h4>
-    <p>{{family.description}}</p>
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Size</th>
-          <th>vCPU</th>
-          <th>Mem (GiB)</th>
-          <th>
-            {{family.storageType || 'SSD'}} Storage (GB)
-            <help-field ng-if="family.storageHelpFieldKey" key="{{family.storageHelpFieldKey}}"></help-field>
-          </th>
-          <th>Cost</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          ng-repeat="instanceType in family.instanceTypes"
-          ng-class="{info: instanceTypeCtrl.command.instanceType === instanceType.name, clickable: !instanceType.unavailable, unavailable: instanceType.unavailable}"
-          ng-click="instanceTypeCtrl.selectInstanceType(instanceType)"
-        >
-          <td>
-            <help-field ng-if="instanceType.unavailable" key="instanceType.unavailable"></help-field>
-            <help-field ng-if="instanceType.helpFieldKey" key="{{instanceType.helpFieldKey}}"></help-field>
-            <input
-              type="radio"
-              ng-value="instanceType.name"
-              ng-model="instanceTypeCtrl.command.instanceType"
-              ng-disabled="instanceType.unavailable"
-            />
-          </td>
-          <td>{{instanceType.label}}</td>
-          <td>{{instanceType.cpu}}</td>
-          <td>{{instanceType.memory}}</td>
-          <td ng-if="instanceType.storage.type === 'EBS'">EBS Only</td>
-          <td ng-if="instanceType.storage.type === 'SSD' || family.storageType">
-            <help-field
-              ng-if="instanceTypeCtrl.getStorageDescriptionHelpKey(instanceType)"
-              key="{{instanceTypeCtrl.getStorageDescriptionHelpKey(instanceType)}}"
-            ></help-field>
-            {{instanceTypeCtrl.getStorageDescription(instanceType)}}
-          </td>
-          <td><cost-factor factor="instanceType.costFactor"></cost-factor></td>
-        </tr>
-      </tbody>
-    </table>
+<div>
+  <h4>Instance Diversification</h4>
+  <p>Diversify instance type selection across various parameters.</p>
+  <div className="container-fluid form-horizontal">
+    <div class="form-group">
+      <label class="control-label col-sm-6" for="spot-alloc">
+        Spot Allocation Strategy
+        <help-field key="aws.serverGroup.spotAllocationStrategy"></help-field>
+      </label>
+      <div class="col-sm-6">
+        <select id="spot-alloc" class="form-control input-sm">
+          <option value="">
+            Capacity optimized (recommended)
+          </option>
+          <option value="" data-toggle="tooltip" title="Launch Spot Instances from the lowest priced instance pools"
+            >Lowest price</option
+          >
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <!--todo: display if Lowest Price is selected-->
+      <label class="control-label col-sm-6" for="spot-pools">
+        Spot Instance Pools Count
+        <help-field key="aws.serverGroup.spotInstancePoolCount"></help-field>
+      </label>
+      <div class="col-sm-6">
+        <input id="spot-pools" type="text" class="form-control input-sm" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-6" for="od-base-cap">
+        On-Demand Base Capacity
+        <help-field key="aws.serverGroup.odBase"></help-field>
+      </label>
+      <div class="col-sm-6">
+        <input type="text" class="form-control input-sm" id="od-base-cap" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-6" for="od-percent">
+        On-Demand Percentage Above Base Capacity
+        <help-field key="aws.serverGroup.odPercentAboveBase"></help-field>
+      </label>
+      <div class="col-sm-6">
+        <input type="text" class="form-control input-sm" id="od-percent" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="control-label col-sm-6" for="spot-price">
+        Spot Max Price
+        <help-field key="aws.serverGroup.spotPrice"></help-field>
+      </label>
+      <div class="col-sm-6">
+        <input type="text" class="form-control input-sm" id="spot-price" />
+      </div>
+    </div>
   </div>
 </div>
+<hr />
+<h4>Instance Types</h4>
+<p>
+  <b>{{selectedInstanceProfile.label}}:</b>
+</p>
+
+<ul>
+  <li>
+    M5 instances provide a balance of compute, memory, and network resources. They are a good choice for most
+    applications.
+  </li>
+  <li>
+    T2 / T3 instances are a good choice for workloads that don’t use the full CPU often or consistently, but
+    occasionally need to burst (e.g. web servers, developer environments and small databases).
+  </li>
+</ul>
+<i
+  ><b>Note:</b> The order of instance types sets their priority when On-Demand capacity is launched; instance type at
+  the top is prioritized the highest.</i
+>
+
+<div className="form-group">
+  <div className="col-md-10 checkbox">
+    <label>
+      <input type="checkbox" />
+      <b>Enable unlimited CPU credits</b>
+    </label>
+  </div>
+</div>
+<!--<div class="form-group">-->
+<!--<label class="control-label col-sm-10" style="float: left;" >-->
+<!--<input type="checkbox"/>-->
+<!--<b>Enable unlimited CPU credits</b>-->
+<!--</label>-->
+<!--<div class="col-sm-2">-->
+<!--<label class="switch">-->
+<!--<input type="checkbox">-->
+<!--<div class="slider round">-->
+<!--<span class="on">Show selected</span>-->
+<!--<span class="off">Show all types</span>-->
+<!--</div>-->
+<!--</label>-->
+<!--</div>-->
+<!--</div>-->
+
+<!--<button class="btn btn-sm btn-default" ng-click="ctrl.createServerGroup()">-->
+<!--<span class="glyphicon glyphicon-plus-sign visible-lg-inline"></span>-->
+<!--<span-->
+<!--class="glyphicon glyphicon-plus-sign visible-md-inline visible-sm-inline"-->
+<!--&gt;</span>-->
+<!--<span class="visible-lg-inline">Show all</span>-->
+<!--</button>-->
+
+<!--<div ng-repeat="family in selectedInstanceProfile.families">-->
+<!--<p>{{family.type | uppercase }}: {{family.description}}</p>-->
+<!--&lt;!&ndash;<div ng-if="selectedInstanceProfile.families.type.includes('t2') || selectedInstanceProfile.families.type.includes('t3')" className="col-md-7 checkbox">&ndash;&gt;-->
+<!--<div ng-if="family.type === 't2' || family.type === 't3'" className="col-md-7 checkbox">-->
+<!--<label>-->
+<!--<input type="checkbox"/>-->
+<!--<b>Enable unlimited CPU credits</b>-->
+<!--</label>-->
+<!--</div>-->
+<!--</div>-->
+<table class="table table-condensed packed">
+  <thead>
+    <tr>
+      <th></th>
+      <th>Instance Type</th>
+      <th>vCPU</th>
+      <th>Mem (GiB)</th>
+      <!--<th ng-if="selectedInstanceProfile.families.type.includes('t2') || selectedInstanceProfile.families.type.includes('t3')">-->
+      <th>
+        CPU Credits / hour
+      </th>
+      <th>
+        {{family.storageType || 'SSD'}} Storage (GB)
+        <help-field ng-if="family.storageHelpFieldKey" key="{{family.storageHelpFieldKey}}"></help-field>
+      </th>
+      <th>Cost</th>
+      <th class="column-vertical-line">
+        Weight
+        <help-field key="aws.serverGroup.instanceTypeWeight"></help-field>
+      </th>
+      <th class="column-vertical-line"></th>
+    </tr>
+  </thead>
+  <tbody ng-repeat="family in selectedInstanceProfile.families">
+    <tr
+      ng-repeat="instanceType in family.instanceTypes"
+      ng-class="{info: instanceTypeCtrl.command.instanceType === instanceType.name, clickable: !instanceType.unavailable, unavailable: instanceType.unavailable}"
+      ng-click="instanceTypeCtrl.selectInstanceType(instanceType)"
+    >
+      <td ng-if="family.type === 'm5' && instanceType.label === 'XLarge'">
+        <div className="checkbox">
+          <input type="checkbox" checked />
+        </div>
+      </td>
+      <!--<td ng-if="family.type === 't2' && instanceType.label === '2XLarge'">-->
+      <!--<div className="checkbox">-->
+      <!--<input type="checkbox" checked/>-->
+      <!--</div>-->
+      <!--</td>-->
+      <td ng-if="family.type === 't2' && instanceType.label === 'Large'">
+        <div className="checkbox">
+          <input type="checkbox" checked />
+        </div>
+      </td>
+      <td ng-if="family.type === 't3' && instanceType.label === 'Large'">
+        <div className="checkbox">
+          <input type="checkbox" checked />
+        </div>
+      </td>
+      <!--<td ng-if="!(family.type === 'm5' && instanceType.label === 'XLarge') &&-->
+      <!--!(family.type === 't3' && instanceType.label === 'Large') &&-->
+      <!--!(family.type === 't2' && instanceType.label === 'Large')&&-->
+      <!--!(family.type === 't2' && instanceType.label === '2XLarge'">-->
+      <!--<help-field ng-if="instanceType.unavailable" key="instanceType.unavailable"></help-field>-->
+      <!--<help-field ng-if="instanceType.helpFieldKey" key="{{instanceType.helpFieldKey}}"></help-field>-->
+      <!--<div className="checkbox">-->
+      <!--<input type="checkbox"-->
+      <!--ng-value="instanceType.name"-->
+      <!--ng-model="instanceTypeCtrl.command.instanceType"-->
+      <!--ng-disabled="instanceType.unavailable"/>-->
+      <!--</div>-->
+
+      <td>
+        {{family.type | lowercase}}.{{instanceType.label | lowercase}}
+      </td>
+
+      <td>{{instanceType.cpu}}</td>
+
+      <td>{{instanceType.memory}}</td>
+
+      <td ng-if="instanceType.cpuCredits">{{instanceType.cpuCredits}}</td>
+      <td ng-if="!instanceType.cpuCredits">-</td>
+
+      <td ng-if="instanceType.storage.type === 'EBS'">EBS Only</td>
+      <td ng-if="instanceType.storage.type === 'SSD' || family.storageType">
+        <help-field
+          ng-if="instanceTypeCtrl.getStorageDescriptionHelpKey(instanceType)"
+          key="{{instanceTypeCtrl.getStorageDescriptionHelpKey(instanceType)}}"
+        ></help-field>
+        {{instanceTypeCtrl.getStorageDescription(instanceType)}}
+      </td>
+
+      <td><cost-factor factor="instanceType.costFactor"></cost-factor></td>
+
+      <td class="column-vertical-line col-md-2">
+        <input class="form-control input input-sm" type="text" placeholder="1" />
+      </td>
+
+      <td ng-if="family.type === 'm5' && instanceType.label === 'XLarge'">
+        <div className="form-control-static">
+          <a class="disabled" className="clickable">
+            <span class="glyphicon glyphicon-circle-arrow-up" uib-tooltip="move up"></span>
+          </a>
+          <a className="clickable">
+            <span class="glyphicon glyphicon-circle-arrow-down" uib-tooltip="move down" />
+          </a>
+        </div>
+      </td>
+      <!--<td ng-if="family.type === 't2' && instanceType.label === '2XLarge'">-->
+      <!--<div className="form-control-static">-->
+      <!--<a class="disabled" className="clickable" >-->
+      <!--<span class="glyphicon glyphicon-circle-arrow-up" uib-tooltip="move up"></span>-->
+      <!--</a>-->
+      <!--<a className="clickable" >-->
+      <!--<span class="glyphicon glyphicon-circle-arrow-down" uib-tooltip="move down"/>-->
+      <!--</a>-->
+      <!--</div>-->
+      <!--</td>-->
+      <td ng-if="family.type === 't2' && instanceType.label === 'Large'">
+        <div className="form-control-static">
+          <a className="clickable">
+            <span class="glyphicon glyphicon-circle-arrow-up" uib-tooltip="move up"></span>
+          </a>
+          <a className="clickable">
+            <span class="glyphicon glyphicon-circle-arrow-down" uib-tooltip="move down" />
+          </a>
+        </div>
+      </td>
+      <td ng-if="family.type === 't3' && instanceType.label === 'Large'">
+        <div className="form-control-static">
+          <a className="clickable">
+            <span class="glyphicon glyphicon-circle-arrow-up" uib-tooltip="move up"></span>
+          </a>
+          <a class="disabled" className="clickable">
+            <span class="glyphicon glyphicon-circle-arrow-down" uib-tooltip="move down" />
+          </a>
+        </div>
+      </td>
+      <!--<td ng-if="!(family.type === 'm5' && instanceType.label === 'XLarge') &&-->
+      <!--!(family.type === 't3' && instanceType.label === 'Large') &&-->
+      <!--!(family.type === 't2' && instanceType.label === 'Large') &&-->
+      <!--!(family.type === 't2' && instanceType.label === '2XLarge')"-->
+      <!--class="column-vertical-line">-->
+      <!--<div className="form-control-static">-->
+      <!--<a class="disabled" className="clickable" >-->
+      <!--<span class="glyphicon glyphicon-circle-arrow-up" uib-tooltip="move up"></span>-->
+      <!--</a>-->
+      <!--<a class="disabled" className="clickable" >-->
+      <!--<span class="glyphicon glyphicon-circle-arrow-down" uib-tooltip="move down"/>-->
+      <!--</a>-->
+      <!--</div>-->
+      <!--</td>-->
+    </tr>
+  </tbody>
+</table>
+
+<!--<div class="row" ng-repeat="family in selectedInstanceProfile.families">-->
+<!--<div class="col-md-12">-->
+<!--<b>{{selectedInstanceProfile.label}}: {{family.type}}</b>-->
+<!--<p>{{family.description}}</p>-->
+<!--<div ng-if="family.type === 't2' || family.type === 't3'" className="col-md-7 checkbox">-->
+<!--<label>-->
+<!--<input type="checkbox"/>-->
+<!--<b>Enable unlimited CPU credits</b>-->
+<!--</label>-->
+<!--</div>-->
+<!--<thead>-->
+<!--<tr>-->
+<!--<th></th>-->
+<!--<th>Size</th>-->
+<!--<th>vCPU</th>-->
+<!--<th>Mem (GiB)</th>-->
+<!--<th ng-if="family.type === 't2' || family.type === 't3'">CPU Credits / hour</th>-->
+<!--<th>-->
+<!--{{family.storageType || 'SSD'}} Storage (GB)-->
+<!--<help-field ng-if="family.storageHelpFieldKey" key="{{family.storageHelpFieldKey}}"></help-field>-->
+<!--</th>-->
+<!--<th>Cost</th>-->
+<!--<th class="column-vertical-line" ng-if="family.type != 'r5'">Weight-->
+<!--<help-field key="aws.serverGroup.instanceTypeWeight"></help-field>-->
+<!--</th>-->
+<!--</tr>-->
+<!--</thead>-->
+<!--<tbody>-->
+<!--<tr-->
+<!--ng-repeat="instanceType in family.instanceTypes"-->
+<!--ng-class="{info: instanceTypeCtrl.command.instanceType === instanceType.name, clickable: !instanceType.unavailable, unavailable: instanceType.unavailable}"-->
+<!--ng-click="instanceTypeCtrl.selectInstanceType(instanceType)"-->
+<!--&gt;-->
+<!--<td ng-if="family.type === 'r5' && instanceType.label === 'Large'">-->
+<!--<help-field ng-if="instanceType.unavailable" key="instanceType.unavailable"></help-field>-->
+<!--<help-field ng-if="instanceType.helpFieldKey" key="{{instanceType.helpFieldKey}}"></help-field>-->
+<!--<input-->
+<!--type="checkbox" checked/>-->
+<!--</td>-->
+<!--<td ng-if="!(family.type === 'r5' && instanceType.label === 'Large')">-->
+<!--<help-field ng-if="instanceType.unavailable" key="instanceType.unavailable"></help-field>-->
+<!--<help-field ng-if="instanceType.helpFieldKey" key="{{instanceType.helpFieldKey}}"></help-field>-->
+<!--<input-->
+<!--type="checkbox"-->
+<!--ng-value="instanceType.name"-->
+<!--ng-model="instanceTypeCtrl.command.instanceType"-->
+<!--ng-disabled="instanceType.unavailable"-->
+<!--/>-->
+<!--</td>-->
+<!--<td>{{instanceType.label}}</td>-->
+<!--<td>{{instanceType.cpu}}</td>-->
+<!--<td>{{instanceType.memory}}</td>-->
+<!--<td ng-if="instanceType.cpuCredits">{{instanceType.cpuCredits}}</td>-->
+<!--<td ng-if="instanceType.storage.type === 'EBS'">EBS Only</td>-->
+<!--<td ng-if="instanceType.storage.type === 'SSD' || family.storageType">-->
+<!--<help-field-->
+<!--ng-if="instanceTypeCtrl.getStorageDescriptionHelpKey(instanceType)"-->
+<!--key="{{instanceTypeCtrl.getStorageDescriptionHelpKey(instanceType)}}"-->
+<!--&gt;</help-field>-->
+<!--{{instanceTypeCtrl.getStorageDescription(instanceType)}}-->
+<!--</td>-->
+<!--<td><cost-factor factor="instanceType.costFactor"></cost-factor></td>-->
+<!--<td class="column-vertical-line" ng-if="family.type != 'r5'">-->
+<!--<input class="form-control input input-sm" type="text"/>-->
+<!--</td>-->
+<!--<td>-->
+<!--<a class="btn-link sm-label" ng-click="ctrl.moveUp(securityGroup.securityRules, $index)"-->
+<!--&gt;<span class="glyphicon glyphicon-arrow-up"></span>-->
+<!--</a>-->
+<!--<a class="btn-link sm-label" ng-click="ctrl.moveDown(securityGroup.securityRules, $index)"-->
+<!--&gt;<span class="glyphicon glyphicon-arrow-down"></span>-->
+<!--</a>-->
+<!--</td>-->
+<!--</tr>-->
+<!--</tbody>-->
+<!--</div>-->
+<!--</table>-->
+<!--</div>-->

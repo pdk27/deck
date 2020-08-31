@@ -59,6 +59,17 @@ const helpContents: { [key: string]: string } = {
     '(Optional) <b>Detail</b> is a string of free-form alphanumeric characters and hyphens to describe any other variables.',
   'aws.serverGroup.imageName':
     '(Required) <b>Image</b> is the deployable Amazon Machine Image. Images are restricted to the account and region selected.',
+  'aws.serverGroup.spotAllocationStrategy': `<p>Indicate how to allocate instances across Spot Instance pools.</p>
+      <ul>
+        <li><b>Capacity optimized (recommended)</b>: Launch instances using Spot pools that are optimally chosen based on the available Spot capacity.</li>
+        <li><b>Lowest price</b>: Launch instances using Spot pools with the lowest price, and evenly allocate your instances across the number of Spot pools specified</li>
+      </ul>`,
+  'aws.serverGroup.spotInstancePoolCount': `Number of lowest priced Spot Instance pools to diversify across.`,
+  'aws.serverGroup.odBase': `The minimum amount of the Auto Scaling group's capacity that must be fulfilled by On-Demand Instances. This base portion is provisioned first as your group scales.`,
+  'aws.serverGroup.odPercentAboveBase': `Percentages of On-Demand Instances and Spot Instances for your additional capacity beyond OnDemandBaseCapacity.`,
+  'aws.serverGroup.instanceTypeWeight': `The number of capacity units gives the instance type a proportional weight to other instance types. When specified, weights count towards desired capacity.`,
+  'aws.serverGroup.instanceTypes': `Specify up to 20 instance types.`,
+
   'aws.serverGroup.legacyUdf': `<p>(Optional) <b>User Data Format</b> allows overriding of the format used when generating user data during deployment. The default format used is configured
       in the application's attributes, editable via the 'Config' tab.</p>
       <p><b>Default</b> will use the value from the application's configuration.</p>
